@@ -18,13 +18,13 @@ source spotify_venv/bin/activate
 pip install requests
 pip install -r requirements.txt
 
-### On Windows
+On Windows
 python -m venv spotify_venv
 spotify_venv\Scripts\activate
 pip install requests
 pip install -r requirements.txt
 
-### Usage
+Usage
 After setting up and activating the virtual environment, you can run spotdl scripts as needed.
 
 ### Notes
