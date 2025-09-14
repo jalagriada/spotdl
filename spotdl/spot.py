@@ -167,7 +167,6 @@ class AdvancedSpotifyDownloader:
                 self.rename_files_with_commas(output_path)
                 # Fix metadata to use commas instead of slashes
                 self.fix_metadata_commas(output_path)
-                print("Download completed successfully!")
                 return True
             else:
                 print(f"spotdl error: {result.stderr}")
