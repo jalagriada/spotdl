@@ -1,3 +1,4 @@
+ON LINUX:
 python -m venv spotify_venv
 source spotify_venv/bin/activate
 pip install requests
