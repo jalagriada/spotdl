@@ -27,6 +27,7 @@ pip install -r requirements.txt
 Usage
 After setting up and activating the virtual environment, you can run spotdl scripts as needed.
 
+---
 ### Notes
 - On Linux/macOS, python3 is recommended to ensure you are using Python 3.
 - The activation command differs between Windows (spotify_venv\Scripts\activate) and Linux/macOS (source spotify_venv/bin/activate).
