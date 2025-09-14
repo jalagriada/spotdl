@@ -2,11 +2,13 @@ ON LINUX and macOS:
 python -m venv spotify_venv
 source spotify_venv/bin/activate
 pip install requests
+pip install spotdl
 pip install -r requirements.txt
 
 ON WINDOWS:
 python -m venv spotify_venv
 spotify_venv/Scripts/Activate
 pip install requests
+pip install spotdl
 pip install -r requirements.txt
 
