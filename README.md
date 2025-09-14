@@ -10,7 +10,7 @@ Compatible with **Linux**, **macOS**, and **Windows**.
 
 Follow the instructions below to set up the virtual environment and install the necessary dependencies based on your operating system.
 
-### On Linux and macOS
+### Supported on Linux, macOS, and Windows
 
 ```bash
 python3 -m venv spotify_venv
