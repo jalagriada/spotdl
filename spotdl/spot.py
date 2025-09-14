@@ -5,7 +5,6 @@ import re
 import json
 import requests
 import subprocess
-import yt_dlp
 from pathlib import Path
 from urllib.parse import quote
 import spotipy
@@ -27,6 +26,10 @@ class AdvancedSpotifyDownloader:
         self.output_dir = script_dir / "Spotify Downloads"
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
+        # Check if spotdl is installed
+        if not self.check_spotdl_installed():
+            print("spotdl is not installed. Please install it with: pip install spotdl")
+            sys.exit(1)
         
         # Initialize Spotify client
         try:
@@ -40,6 +43,15 @@ class AdvancedSpotifyDownloader:
             print(f"Error initializing Spotify client: {e}")
             print("Please check your Spotify API credentials")
             sys.exit(1)
+    
+    def check_spotdl_installed(self) -> bool:
+        """Check if spotdl is installed and available"""
+        try:
+            subprocess.run(["spotdl", "--version"], 
+                          capture_output=True, check=True, text=True)
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return False
     
     def clear_screen(self):
         """Clear the screen but keep the header"""
@@ -59,7 +71,7 @@ class AdvancedSpotifyDownloader:
         print("     Developed by: @jalagriada")
         print()
         print("[*] Spotify Music Downloader")
-        print("[*] Download your song in 320kbps")
+        print("[*] Download your song in 320kbps using spotdl")
         print("[*] Paste Spotify URLs (track or album). Type 'exit' to quit.")
         print("[*] Type 'clear' to clear the screen.")
         print(f"[*] Downloading to: {self.output_dir}")
@@ -132,116 +144,97 @@ class AdvancedSpotifyDownloader:
             print(f"Error getting album info: {e}")
             return None
     
-    def search_youtube(self, query: str) -> Optional[str]:
-        """Search for a video on YouTube"""
+    def download_with_spotdl(self, url: str, output_path: Path) -> bool:
+        """Download audio using spotdl with 320kbps quality and custom filename format"""
         try:
-            ydl_opts = {
-                'quiet': True,
-                'skip_download': True,
-                'format': 'bestaudio/best',
-                'no_progress': True,  # Disable progress bar to prevent ^[[B characters
-            }
+            # Change to the output directory
+            original_cwd = os.getcwd()
+            os.chdir(output_path)
             
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(f"ytsearch:{query}", download=False)
-                if info['entries']:
-                    return info['entries'][0]['webpage_url']
-            return None
-        except Exception as e:
-            print(f"Error searching YouTube: {e}")
-            return None
-    
-    def download_audio(self, url: str, output_path: Path, metadata: Dict) -> bool:
-        """Download audio from YouTube"""
-        try:
-            # Format the output filename
-            safe_artist = self.sanitize_filename(metadata['artists'])
-            safe_title = self.sanitize_filename(metadata['title'])
-            filename = f"{safe_artist} - {safe_title}.mp3"
-            filepath = output_path / filename
+            # First, let spotdl download with its default format
+            result = subprocess.run(
+                ["spotdl", url, "--bitrate", "320k"],
+                capture_output=True,
+                text=True,
+                timeout=300  # 5 minute timeout
+            )
             
-            ydl_opts = {
-                'format': 'bestaudio/best',
-                'outtmpl': str(filepath.with_suffix('.temp')),
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '320',
-                }],
-                'quiet': True,  # Make yt-dlp quieter
-                'no_warnings': True,  # Suppress warnings
-                'no_progress': True,  # Disable progress bar to prevent ^[[B characters
-                'console_title': False,  # Disable console title changes
-            }
+            # Change back to original directory
+            os.chdir(original_cwd)
             
-            print("Downloading... (this may take a moment)")
-            
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
-            
-            # Rename temp file to final filename
-            temp_file = filepath.with_suffix('.temp.mp3')
-            if temp_file.exists():
-                temp_file.rename(filepath)
-                self.apply_metadata(filepath, metadata)
+            if result.returncode == 0:
+                # Now rename the files to use comma instead of slash
+                self.rename_files_with_commas(output_path)
+                # Fix metadata to use commas instead of slashes
+                self.fix_metadata_commas(output_path)
+                print("Download completed successfully!")
                 return True
-            
+            else:
+                print(f"spotdl error: {result.stderr}")
+                return False
+                
+        except subprocess.TimeoutExpired:
+            print("Download timed out!")
+            os.chdir(original_cwd)
             return False
         except Exception as e:
-            print(f"Error downloading audio: {e}")
-            # Clean up temporary files
-            temp_file = filepath.with_suffix('.temp.mp3')
-            if temp_file.exists():
-                temp_file.unlink()
+            print(f"Error downloading with spotdl: {e}")
+            os.chdir(original_cwd)
             return False
     
-    def apply_metadata(self, filepath: Path, metadata: Dict):
-        """Apply metadata to the audio file"""
-        try:
-            audio = MP3(filepath, ID3=ID3)
-            
-            # Add ID3 tag if it doesn't exist
-            try:
-                audio.add_tags()
-            except error:
-                pass
-            
-            # Set basic metadata
-            audio['TPE1'] = TPE1(encoding=3, text=metadata['artists'])  # Artist
-            audio['TIT2'] = TIT2(encoding=3, text=metadata['title'])    # Title
-            audio['TALB'] = TALB(encoding=3, text=metadata.get('album', ''))  # Album
-            
-            if 'track_number' in metadata:
-                audio['TRCK'] = mutagen.id3.TRCK(encoding=3, text=str(metadata['track_number']))
-            
-            if 'release_date' in metadata:
-                year = metadata['release_date'].split('-')[0]
-                audio['TYER'] = TYER(encoding=3, text=year)
-            
-            # Download and add cover art
-            if 'cover_url' in metadata and metadata['cover_url']:
+    def rename_files_with_commas(self, directory: Path):
+        """Rename files to replace slashes with commas in artist names"""
+        for file_path in directory.glob("*.mp3"):
+            if " - " in file_path.name and "/" in file_path.name:
+                # Replace slashes with commas in the filename
+                new_name = file_path.name.replace("/", ", ")
+                new_path = directory / new_name
+                
+                # Avoid overwriting existing files
+                counter = 1
+                while new_path.exists():
+                    name_parts = new_name.rsplit('.', 1)
+                    new_name = f"{name_parts[0]} ({counter}).{name_parts[1]}"
+                    new_path = directory / new_name
+                    counter += 1
+                
                 try:
-                    response = requests.get(metadata['cover_url'])
-                    if response.status_code == 200:
-                        audio['APIC'] = APIC(
-                            encoding=3,
-                            mime='image/jpeg',
-                            type=3,  # 3 is for cover image
-                            desc='Cover',
-                            data=response.content
-                        )
+                    file_path.rename(new_path)
+                    print(f"Renamed: {file_path.name} -> {new_name}")
                 except Exception as e:
-                    print(f"Error adding cover art: {e}")
-            
-            audio.save()
-        except Exception as e:
-            print(f"Error applying metadata: {e}")
+                    print(f"Error renaming file {file_path.name}: {e}")
+    
+    def fix_metadata_commas(self, directory: Path):
+        """Fix ID3 metadata to use commas instead of slashes for artist names"""
+        for file_path in directory.glob("*.mp3"):
+            try:
+                audio = MP3(file_path, ID3=ID3)
+                
+                # Ensure ID3 tags exist
+                try:
+                    audio.add_tags()
+                except error:
+                    pass  # Tags already exist
+                
+                # Fix artist metadata if it contains slashes
+                if 'TPE1' in audio.tags:
+                    artist = audio.tags['TPE1'].text[0]
+                    if '/' in artist:
+                        fixed_artist = artist.replace('/', ', ')
+                        audio.tags['TPE1'] = TPE1(encoding=3, text=fixed_artist)
+                        print(f"Fixed artist metadata: {artist} -> {fixed_artist}")
+                
+                # Save changes
+                audio.save()
+                
+            except Exception as e:
+                print(f"Error fixing metadata for {file_path.name}: {e}")
     
     def download_track(self, track_url: str):
-        """Download a single track"""
+        """Download a single track using spotdl"""
         print(f"Processing track: {track_url}")
         
-        # Get track info from Spotify
+        # Get track info from Spotify (for display purposes)
         track_info = self.get_track_info(track_url)
         if not track_info:
             print("Failed to get track information")
@@ -249,24 +242,12 @@ class AdvancedSpotifyDownloader:
         
         print(f"Found track: {track_info['artists']} - {track_info['title']}")
         
-        # Create search query
-        search_query = f"{track_info['artists']} {track_info['title']} official audio"
-        
-        # Search for the track on YouTube
-        print("Searching for audio on YouTube...")
-        youtube_url = self.search_youtube(search_query)
-        if not youtube_url:
-            print("Could not find audio on YouTube")
-            return False
-        
-        print(f"Found YouTube audio")
-        
         # Create album directory
         album_dir = self.output_dir / self.sanitize_filename(track_info['album'])
         album_dir.mkdir(exist_ok=True)
         
-        # Download the audio
-        success = self.download_audio(youtube_url, album_dir, track_info)
+        # Download the audio using spotdl
+        success = self.download_with_spotdl(track_url, album_dir)
         
         if success:
             print("Download completed successfully!")
@@ -276,10 +257,10 @@ class AdvancedSpotifyDownloader:
         return success
     
     def download_album(self, album_url: str):
-        """Download an entire album"""
+        """Download an entire album using spotdl"""
         print(f"Processing album: {album_url}")
         
-        # Get album info from Spotify
+        # Get album info from Spotify (for display purposes)
         album_info = self.get_album_info(album_url)
         if not album_info:
             print("Failed to get album information")
@@ -292,37 +273,15 @@ class AdvancedSpotifyDownloader:
         album_dir = self.output_dir / self.sanitize_filename(f"{album_info['artists']} - {album_info['name']}")
         album_dir.mkdir(exist_ok=True)
         
-        # Add album info to each track's metadata
-        for track in album_info['tracks']:
-            track['album'] = album_info['name']
-            track['release_date'] = album_info['release_date']
-            track['cover_url'] = album_info['cover_url']
+        # Download the entire album using spotdl
+        success = self.download_with_spotdl(album_url, album_dir)
         
-        # Download each track
-        success_count = 0
-        for i, track in enumerate(album_info['tracks']):
-            print(f"\nDownloading track {i+1}/{album_info['total_tracks']}: {track['artists']} - {track['title']}")
-            
-            # Create search query
-            search_query = f"{track['artists']} {track['title']} official audio"
-            
-            # Search for the track on YouTube
-            youtube_url = self.search_youtube(search_query)
-            if not youtube_url:
-                print("Could not find audio on YouTube")
-                continue
-            
-            # Download the audio
-            success = self.download_audio(youtube_url, album_dir, track)
-            
-            if success:
-                success_count += 1
-                print("Download completed successfully!")
-            else:
-                print("Download failed!")
+        if success:
+            print("Album download completed successfully!")
+        else:
+            print("Album download failed!")
         
-        print(f"\nAlbum download complete! {success_count}/{album_info['total_tracks']} tracks downloaded successfully.")
-        return success_count > 0
+        return success
     
     def process_url(self, url: str):
         """Process a Spotify URL (track or album)"""
