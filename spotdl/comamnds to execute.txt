@@ -7,7 +7,7 @@ pip install -r requirements.txt
 
 ON WINDOWS:
 python -m venv spotify_venv
-spotify_venv/Scripts/Activate
+spotify_venv\Scripts\activate
 pip install requests
 pip install spotdl
 pip install -r requirements.txt
