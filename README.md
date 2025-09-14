@@ -13,18 +13,19 @@ Follow the instructions below to set up the virtual environment and install the 
 ### Supported on Linux, macOS, and Windows
 
 ```bash
+This is for Linux & macOS:
 python3 -m venv spotify_venv
 source spotify_venv/bin/activate
 pip install requests
 pip install -r requirements.txt
 
-On Windows
+This is for Windows: 
 python -m venv spotify_venv
 spotify_venv\Scripts\activate
 pip install requests
 pip install -r requirements.txt
 
-Usage
+Usage:
 After setting up and activating the virtual environment, you can run spotdl scripts as needed.
 - On Linux/macOS, python3 is recommended to ensure you are using Python 3.
 - The activation command differs between Windows (spotify_venv\Scripts\activate) and Linux/macOS (source spotify_venv/bin/activate).
