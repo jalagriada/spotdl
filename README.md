@@ -18,7 +18,6 @@ source spotify_venv/bin/activate
 pip install requests
 pip install -r requirements.txt
 
-```bash
 On Windows
 python -m venv spotify_venv
 spotify_venv\Scripts\activate
