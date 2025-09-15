@@ -18,4 +18,4 @@ chmod +x setup.sh   # Give execute permission
 source spotify_venv/bin/activate
 
 For Windows:
-Simply run the batch file to automatically create the virtual environment and install all dependencies. After running the script, type "spotify_venv\Scripts\activate"
+Simply run the batch file to automatically create the virtual environment and install all dependencies. After running the script, type "call spotify_venv\Scripts\activate"
