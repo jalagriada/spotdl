@@ -27,6 +27,10 @@ pip install spotdl
 pip install requests
 pip install -r requirements.txt
 
+Or just do this instead:
+chmod +x setup_spotdl.sh   # give execute permission
+./setup.sh          # run the script
+
 Usage:
 After setting up and activating the virtual environment, you can run spotdl scripts as needed.
 - On Linux/macOS, python3 is recommended to ensure you are using Python 3.
