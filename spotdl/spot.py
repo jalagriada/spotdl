@@ -28,7 +28,7 @@ class AdvancedSpotifyDownloader:
         
         # Check if spotdl is installed
         if not self.check_spotdl_installed():
-            print("spotdl is not installed. Please install it with: pip install spotdl")
+            print("[*] spotdl is not installed. Please install it with: pip install spotdl")
             sys.exit(1)
         
         # Initialize Spotify client
@@ -40,8 +40,8 @@ class AdvancedSpotifyDownloader:
                 )
             )
         except Exception as e:
-            print(f"Error initializing Spotify client: {e}")
-            print("Please check your Spotify API credentials")
+            print(f"[*] Error initializing Spotify client: {e}")
+            print("[*] Please check your Spotify API credentials")
             sys.exit(1)
     
     def check_spotdl_installed(self) -> bool:
@@ -101,7 +101,7 @@ class AdvancedSpotifyDownloader:
                 'cover_url': track['album']['images'][0]['url'] if track['album']['images'] else None
             }
         except Exception as e:
-            print(f"Error getting track info: {e}")
+            print(f"[*] Error getting track info: {e}")
             return None
     
     def get_album_info(self, album_url: str) -> Optional[Dict]:
@@ -141,7 +141,7 @@ class AdvancedSpotifyDownloader:
             
             return album_info
         except Exception as e:
-            print(f"Error getting album info: {e}")
+            print(f"[*] Error getting album info: {e}")
             return None
     
     def download_with_spotdl(self, url: str, output_path: Path) -> bool:
@@ -173,11 +173,11 @@ class AdvancedSpotifyDownloader:
                 return False
                 
         except subprocess.TimeoutExpired:
-            print("Download timed out!")
+            print("[*] Download timed out!")
             os.chdir(original_cwd)
             return False
         except Exception as e:
-            print(f"Error downloading with spotdl: {e}")
+            print(f"[*] Error downloading with spotdl: {e}")
             os.chdir(original_cwd)
             return False
     
@@ -221,25 +221,25 @@ class AdvancedSpotifyDownloader:
                     if '/' in artist:
                         fixed_artist = artist.replace('/', ', ')
                         audio.tags['TPE1'] = TPE1(encoding=3, text=fixed_artist)
-                        print(f"Fixed artist metadata: {artist} -> {fixed_artist}")
+                        print(f"[*] Fixed artist metadata: {artist} -> {fixed_artist}")
                 
                 # Save changes
                 audio.save()
                 
             except Exception as e:
-                print(f"Error fixing metadata for {file_path.name}: {e}")
+                print(f"[*] Error fixing metadata for {file_path.name}: {e}")
     
     def download_track(self, track_url: str):
         """Download a single track using spotdl"""
-        print(f"Processing track: {track_url}")
+        print(f"[*] Processing track: {track_url}")
         
         # Get track info from Spotify (for display purposes)
         track_info = self.get_track_info(track_url)
         if not track_info:
-            print("Failed to get track information")
+            print("[*] Failed to get track information")
             return False
         
-        print(f"Found track: {track_info['artists']} - {track_info['title']}")
+        print(f"[*] Found track: {track_info['artists']} - {track_info['title']}")
         
         # Create album directory
         album_dir = self.output_dir / self.sanitize_filename(track_info['album'])
@@ -249,24 +249,24 @@ class AdvancedSpotifyDownloader:
         success = self.download_with_spotdl(track_url, album_dir)
         
         if success:
-            print("Download completed successfully!")
+            print("[*] Download completed successfully!")
         else:
-            print("Download failed!")
+            print("[*] Download failed!")
         
         return success
     
     def download_album(self, album_url: str):
         """Download an entire album using spotdl"""
-        print(f"Processing album: {album_url}")
+        print(f"[*] Processing album: {album_url}")
         
         # Get album info from Spotify (for display purposes)
         album_info = self.get_album_info(album_url)
         if not album_info:
-            print("Failed to get album information")
+            print("[*] Failed to get album information")
             return False
         
-        print(f"Found album: {album_info['artists']} - {album_info['name']}")
-        print(f"Tracks: {album_info['total_tracks']}")
+        print(f"[*] Found album: {album_info['artists']} - {album_info['name']}")
+        print(f"[*] Tracks: {album_info['total_tracks']}")
         
         # Create album directory
         album_dir = self.output_dir / self.sanitize_filename(f"{album_info['artists']} - {album_info['name']}")
@@ -276,9 +276,9 @@ class AdvancedSpotifyDownloader:
         success = self.download_with_spotdl(album_url, album_dir)
         
         if success:
-            print("Album download completed successfully!")
+            print("[*] Album download completed successfully!")
         else:
-            print("Album download failed!")
+            print("[*] Album download failed!")
         
         return success
     
@@ -289,7 +289,7 @@ class AdvancedSpotifyDownloader:
         elif 'album' in url:
             return self.download_album(url)
         else:
-            print("Unsupported Spotify URL. Please provide a track or album link.")
+            print("[*] Unsupported Spotify URL. Please provide a track or album link.")
             return False
 
 def main():
@@ -313,9 +313,9 @@ def main():
                 print(f"{'='*50}\n")
                 
         except FileNotFoundError:
-            print(f"File not found: {args.file}")
+            print(f"[*] File not found: {args.file}")
         except Exception as e:
-            print(f"Error processing file: {e}")
+            print(f"[*] Error processing file: {e}")
     
     elif args.url:
         # Process a single URL
@@ -327,7 +327,7 @@ def main():
         
         while True:
             try:
-                url = input("\nEnter Spotify URL: ").strip()
+                url = input("\n[*] Enter Spotify URL: ").strip()
                 
                 if url.lower() in ['exit', 'quit', 'q']:
                     break
@@ -342,10 +342,10 @@ def main():
                 downloader.process_url(url)
                 
             except KeyboardInterrupt:
-                print("\nExiting...")
+                print("\n[*] Exiting...")
                 break
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"[*] Error: {e}")
 
 if __name__ == "__main__":
     main()
