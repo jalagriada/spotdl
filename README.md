@@ -10,7 +10,7 @@ A Python-based Spotify downloader that fetches high-quality (320kbps) MP3 audio 
 
 Follow the instructions below to set up the virtual environment and install the necessary dependencies based on your operating system.
 
-### Compatible with **Linux**, **macOS**, and **Windows**.
+## Compatible with **Linux**, **macOS**, and **Windows**.
 
 ## For Linux & macOS:
 python3 -m venv spotify_venv
