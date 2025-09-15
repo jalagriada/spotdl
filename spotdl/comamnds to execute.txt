@@ -12,3 +12,9 @@ pip install requests
 pip install spotdl
 pip install -r requirements.txt
 
+Or just do this instead on Linux and macOS:
+chmod +x setup.sh   # Give execute permission
+./setup.sh          # Run the script
+
+For Windows:
+Simply run the batch file to automatically create the virtual environment and install all dependencies.
