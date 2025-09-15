@@ -44,7 +44,7 @@ pip install -r requirements.txt
 ---
 
 ### Windows
-```bat
+```bash
 REM Create virtual environment
 python -m venv spotify_venv
 
