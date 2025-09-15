@@ -16,7 +16,6 @@ Follow the instructions below to set up the virtual environment and install the 
 ```bash
 python3 -m venv spotify_venv
 source spotify_venv/bin/activate
-pip install --upgrade pip
 pip install spotdl
 pip install requests
 pip install -r requirements.txt
@@ -26,7 +25,6 @@ pip install -r requirements.txt
 ```bat
 python -m venv spotify_venv
 call spotify_venv\Scripts\activate
-python -m pip install --upgrade pip
 pip install spotdl
 pip install requests
 pip install -r requirements.txt
