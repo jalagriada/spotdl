@@ -32,7 +32,7 @@ pip install requests
 pip install -r requirements.txt
 ```
 
-## Or just do this instead:
+## Or just do this instead on Linux and macOS:
 ```bash
 chmod +x setup.sh   # Give execute permission
 ./setup.sh          # Run the script
