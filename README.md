@@ -13,15 +13,17 @@ Follow the instructions below to set up the virtual environment and install the 
 ### Compatible with **Linux**, **macOS**, and **Windows**.
 
 ```bash
-This is for Linux & macOS:
+For Linux & macOS:
 python3 -m venv spotify_venv
 source spotify_venv/bin/activate
+pip install spotdl
 pip install requests
 pip install -r requirements.txt
 
-This is for Windows: 
+For Windows: 
 python -m venv spotify_venv
 spotify_venv\Scripts\activate
+pip install spotdl
 pip install requests
 pip install -r requirements.txt
 
