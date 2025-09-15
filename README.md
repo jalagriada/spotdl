@@ -67,9 +67,10 @@ chmod +x setup.sh   # Give execute permission
 ./setup.sh          # Run the setup script
 ```
 
+```bash
 #### Windows
-Double-click the batch file (e.g., `setup_spotdl.bat`) to automatically create the virtual environment and install all dependencies.
-
+Double-click the batch file (e.g., `setup.bat`) to automatically create the virtual environment and install all dependencies.
+```
 ---
 
 ## Usage
