@@ -1,6 +1,6 @@
-## spotdl
+## SpotDL
 
-A Python-based Spotify music downloader that fetches high-quality (320kbps) MP3 audio from Spotify tracks and albums. It uses the Spotify API for track info, YouTube for audio search, and yt-dlp for downloads. Supports metadata embedding (ID3 tags), including album art. Ideal for building an offline music collection.
+**SpotDL** is a Python-based Spotify music downloader. It retrieves track and album information directly from the Spotify API and downloads the matching audio from YouTube Music. The tool automatically embeds metadata (ID3 tags), including song title, artist, album, and album art, resulting in properly organized high-quality MP3 files (up to 320kbps). It’s an ideal solution for building an offline music collection with accurate tags and covers.
 
 ![Project Screenshot](img.png)
 
